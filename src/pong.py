@@ -8,10 +8,11 @@ def get_screen(PONG_BOX):
     screen = ImageGrab.grab(bbox=PONG_BOX)
     frame = np.array(screen)
     frame = cv2.cvtColor(frame , cv2.COLOR_RGB2GRAY)
+    blur = cv2.blur(frame , (10,10))
     return frame[15: , 20:]
 
 if __name__ == "__main__":
-    fgbg = cv2.createBackgroundSubtractorKNN(history=20)
+    fgbg = cv2.createBackgroundSubtractorKNN(history=15)
 
     while True:
         start = time.time()
@@ -24,10 +25,11 @@ if __name__ == "__main__":
         edges = cv2.Canny(movingFrame , 10 , 10)
 
         indices = np.where(edges != [0])
-        coordinates = zip(indices[0], indices[1])
-        for pts in coordinates:
-            print(pts)
-            cv2.circle(frame , pts , 2 , (0,255,0) , -1)
+        coordinates = zip(indices[1] , indices[0])
+
+        for pt in coordinates:
+            ball_Y = pt[1]
+            break
 
         cv2.imshow("Orgiginal" , frame)
         # cv2.imshow("Eges" , edges)
