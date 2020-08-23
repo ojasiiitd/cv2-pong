@@ -24,28 +24,33 @@ def movingEdges(frame):
     edges = cv2.Canny(movingFrame , 10 , 10)
     return edges
 
-def testEdges(frame , edges):
-    indices = np.where(edges != [0])
-    coordinates = zip(indices[1] , indices[0]) # getting all edge coordinates
-    for pt in coordinates:
-        cv2.circle(frame , pt , 3 , (0,255,0) , -1) # to track the ball
-
-def getYcoor(edges):
+def ballYcoor(edges):
     indices = np.where(edges[: , :725] != [0])
     coordinates = zip(indices[1] , indices[0]) # getting all edge coordinates
     y = []
     for i,pt in enumerate(coordinates):
         y.append(pt[1])
-    avgCoor = y[0]
     if len(y) > 0:
         avgCoor = sum(y)//len(y)
-    return avgCoor
+        return avgCoor
+    return len(edges)//2
+
+def paddleYcoor(edges):
+    indices = np.where(edges[: , 725:] != [0])
+    coordinates = zip(indices[1] , indices[0]) # getting all edge coordinates
+    y = []
+    for i,pt in enumerate(coordinates):
+        y.append(pt[1])
+    if len(y) > 0:
+        avgCoor = sum(y)//len(y)
+        return avgCoor
+    return len(edges)//2
 
 if __name__ == "__main__":
 
     windowMovingFunc()
 
-    fgbg = cv2.createBackgroundSubtractorKNN(history=30) # history is low as we have to track only the ball and not other dynamic things like the score, paddles, etc
+    fgbg = cv2.createBackgroundSubtractorKNN(history=100) # history is low as we have to track only the ball and not other dynamic things like the score, paddles, etc
 
     frame_count = 0
 
@@ -56,12 +61,14 @@ if __name__ == "__main__":
         
         edges = movingEdges(frame)
 
-        # testEdges(frame , edges)
+        ball_Y = ballYcoor(edges)
+        paddle_Y = paddleYcoor(edges)
 
-        ball_Y = getYcoor(edges)
+        cv2.circle(frame , (350 , ball_Y) , 4 , (0,255,0) , -1)
+        cv2.circle(frame , (720 , paddle_Y) , 4 , (0,0,255) , -1)
 
-        # cv2.imshow("Original" , frame)
-        cv2.imshow("Edges" , edges)
+        cv2.imshow("Original" , frame)
+        # cv2.imshow("Edges" , edges)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
