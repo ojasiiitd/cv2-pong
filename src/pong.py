@@ -1,9 +1,11 @@
 import time
+import pyKey
 import numpy as np
 import cv2
 from PIL import ImageGrab
 
-MAX_FRAMES = 700
+MAX_FRAMES = 300
+PADDLE_Y = [250]
 
 def windowMovingFunc(winName="Original"):
     test_img = np.zeros(shape=(600,600,3)).astype('uint8')
@@ -14,14 +16,13 @@ def windowMovingFunc(winName="Original"):
 def get_screen(PONG_BOX = (100,220,835,720)):
     screen = ImageGrab.grab(bbox=PONG_BOX)
     frame = np.array(screen)
-    frame = cv2.cvtColor(frame , cv2.COLOR_RGB2BGR)
-    blur = cv2.blur(frame , (20,20)) # blurred for better edge detection
+    frame = cv2.cvtColor(frame , cv2.COLOR_RGB2GRAY)
     return frame
 
 def movingEdges(frame):
     ballMask = fgbg.apply(frame) # getting moving portions i.e. the ball
     movingFrame = cv2.bitwise_and(frame , frame , mask=ballMask) # mask = ballMask for applying ballMask
-    edges = cv2.Canny(movingFrame , 10 , 10)
+    edges = cv2.Canny(movingFrame , 100 , 100)
     return edges
 
 def ballYcoor(edges):
@@ -33,7 +34,7 @@ def ballYcoor(edges):
     if len(y) > 0:
         avgCoor = sum(y)//len(y)
         return avgCoor
-    return len(edges)//2
+    return -1
 
 def paddleYcoor(edges):
     indices = np.where(edges[: , 725:] != [0])
@@ -44,7 +45,18 @@ def paddleYcoor(edges):
     if len(y) > 0:
         avgCoor = sum(y)//len(y)
         return avgCoor
-    return len(edges)//2
+    return 250
+
+def control(ball , paddle) :
+    if ball > paddle:
+        pyKey.releaseKey("UP")
+        pyKey.pressKey("DOWN")
+    elif ball == paddle:
+        pyKey.releaseKey("UP")
+        pyKey.releaseKey("DOWN")
+    else:
+        pyKey.releaseKey("DOWN")
+        pyKey.pressKey("UP")
 
 if __name__ == "__main__":
 
@@ -61,13 +73,20 @@ if __name__ == "__main__":
         
         edges = movingEdges(frame)
 
-        ball_Y = ballYcoor(edges)
-        paddle_Y = paddleYcoor(edges)
+        ball_Y = ballYcoor(edges) + 100
+        if len(PADDLE_Y) > 100:
+            PADDLE_Y = [250]
+        if paddleYcoor(edges) != -1:
+            PADDLE_Y.append(paddleYcoor(edges))
+        paddle_Y = PADDLE_Y[-1]
 
-        cv2.circle(frame , (350 , ball_Y) , 4 , (0,255,0) , -1)
-        cv2.circle(frame , (720 , paddle_Y) , 4 , (0,0,255) , -1)
+        # show Y coordinates
+        # cv2.circle(frame , (350 , ball_Y) , 4 , (0,255,0) , -1)
+        # cv2.circle(frame , (720 , paddle_Y) , 4 , (0,0,255) , -1)
 
-        cv2.imshow("Original" , frame)
+        control(ball_Y , paddle_Y)
+
+        # cv2.imshow("Original" , frame)
         # cv2.imshow("Edges" , edges)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -75,6 +94,8 @@ if __name__ == "__main__":
         
         frame_count += 1
         if frame_count >= MAX_FRAMES:
+            pyKey.releaseKey("UP")
+            pyKey.releaseKey("DOWN")
             break
         print(frame_count , "fps: " , time.time() - start)
 
