@@ -4,8 +4,8 @@ import numpy as np
 import cv2
 from PIL import ImageGrab
 
-MAX_FRAMES = 300
-PADDLE_Y = [250]
+MAX_FRAMES = 550
+PADDLE_Y = [245 , 255]
 
 def windowMovingFunc(winName="Original"):
     test_img = np.zeros(shape=(600,600,3)).astype('uint8')
@@ -13,7 +13,7 @@ def windowMovingFunc(winName="Original"):
     cv2.moveWindow(winName,1250,100)
     cv2.waitKey(1)
 
-def get_screen(PONG_BOX = (100,220,835,720)):
+def get_screen(PONG_BOX = (100,220,845,720)):
     screen = ImageGrab.grab(bbox=PONG_BOX)
     frame = np.array(screen)
     frame = cv2.cvtColor(frame , cv2.COLOR_RGB2GRAY)
@@ -26,43 +26,42 @@ def movingEdges(frame):
     return edges
 
 def ballYcoor(edges):
-    indices = np.where(edges[: , :725] != [0])
+    indices = np.where(edges[40: , :725] != [0])
     coordinates = zip(indices[1] , indices[0]) # getting all edge coordinates
     y = []
     for i,pt in enumerate(coordinates):
         y.append(pt[1])
-    if len(y) > 0:
-        avgCoor = sum(y)//len(y)
-        return avgCoor
-    return -1
+        break
+    if len(y) == 0:
+        return 250
+    return y[0]
 
 def paddleYcoor(edges):
-    indices = np.where(edges[: , 725:] != [0])
+    indices = np.where(edges[: , 720:] != [0])
     coordinates = zip(indices[1] , indices[0]) # getting all edge coordinates
     y = []
     for i,pt in enumerate(coordinates):
         y.append(pt[1])
-    if len(y) > 0:
-        avgCoor = sum(y)//len(y)
-        return avgCoor
-    return 250
+    if len(y) == 0:
+        return -1
+    return [min(y)+5 , max(y)-5]
 
 def control(ball , paddle) :
-    if ball > paddle:
-        pyKey.releaseKey("UP")
-        pyKey.pressKey("DOWN")
-    elif ball == paddle:
+    if ball in range(paddle[0] , paddle[1]):
         pyKey.releaseKey("UP")
         pyKey.releaseKey("DOWN")
-    else:
+    elif ball > paddle[1]:
+        pyKey.releaseKey("UP")
+        pyKey.pressKey("DOWN")
+    elif ball < paddle[0]:
         pyKey.releaseKey("DOWN")
         pyKey.pressKey("UP")
 
 if __name__ == "__main__":
 
-    windowMovingFunc()
+    # windowMovingFunc()
 
-    fgbg = cv2.createBackgroundSubtractorKNN(history=100) # history is low as we have to track only the ball and not other dynamic things like the score, paddles, etc
+    fgbg = cv2.createBackgroundSubtractorKNN(history=40) # history is low as we have to track only the ball and not other dynamic things like the score, paddles, etc
 
     frame_count = 0
 
@@ -73,9 +72,9 @@ if __name__ == "__main__":
         
         edges = movingEdges(frame)
 
-        ball_Y = ballYcoor(edges) + 100
-        if len(PADDLE_Y) > 100:
-            PADDLE_Y = [250]
+        ball_Y = ballYcoor(edges)
+        if len(PADDLE_Y) > 1000:
+            PADDLE_Y = [245,255]
         if paddleYcoor(edges) != -1:
             PADDLE_Y.append(paddleYcoor(edges))
         paddle_Y = PADDLE_Y[-1]
