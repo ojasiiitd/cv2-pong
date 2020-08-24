@@ -1,3 +1,3 @@
 # cv2-pong
 
-using opencv and pyautogui tools to create a bot for the [pong game](https://playpong.net/).
+using opencv and pyKey tools to create a bot for the [pong game](https://pong-2.com/).

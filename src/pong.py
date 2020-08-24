@@ -67,7 +67,7 @@ if __name__ == "__main__":
     frame_count = 0
 
     while True:
-        start = time.time()
+        # start = time.time()
         
         frame = get_screen()
         
@@ -94,10 +94,10 @@ if __name__ == "__main__":
             break
         
         frame_count += 1
-        # if frame_count >= MAX_FRAMES:
-        #     pyKey.releaseKey("UP")
-        #     pyKey.releaseKey("DOWN")
-        #     break
-        print(frame_count , "fps: " , time.time() - start)
+        if frame_count >= MAX_FRAMES:
+            pyKey.releaseKey("UP")
+            pyKey.releaseKey("DOWN")
+            break
+        # print(frame_count , "fps: " , time.time() - start)
 
     cv2.destroyAllWindows()
