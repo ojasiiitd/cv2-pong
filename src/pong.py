@@ -4,7 +4,7 @@ import numpy as np
 import cv2
 from PIL import ImageGrab
 
-MAX_FRAMES = 550
+MAX_FRAMES = 200
 PADDLE_Y = [245 , 255]
 
 def windowMovingFunc(winName="Original"):
@@ -16,7 +16,8 @@ def windowMovingFunc(winName="Original"):
 def get_screen(PONG_BOX = (100,220,845,720)):
     screen = ImageGrab.grab(bbox=PONG_BOX)
     frame = np.array(screen)
-    frame = cv2.cvtColor(frame , cv2.COLOR_RGB2GRAY)
+    # frame = cv2.cvtColor(frame , cv2.COLOR_RGB2GRAY)
+    frame = cv2.cvtColor(frame , cv2.COLOR_RGB2BGR)
     return frame
 
 def movingEdges(frame):
@@ -30,7 +31,7 @@ def ballYcoor(edges):
     coordinates = zip(indices[1] , indices[0]) # getting all edge coordinates
     y = []
     for i,pt in enumerate(coordinates):
-        y.append(pt[1])
+        y.append(pt[1]+40)
         break
     if len(y) == 0:
         return 250
@@ -59,7 +60,7 @@ def control(ball , paddle) :
 
 if __name__ == "__main__":
 
-    # windowMovingFunc()
+    windowMovingFunc()
 
     fgbg = cv2.createBackgroundSubtractorKNN(history=40) # history is low as we have to track only the ball and not other dynamic things like the score, paddles, etc
 
@@ -80,12 +81,13 @@ if __name__ == "__main__":
         paddle_Y = PADDLE_Y[-1]
 
         # show Y coordinates
-        # cv2.circle(frame , (350 , ball_Y) , 4 , (0,255,0) , -1)
-        # cv2.circle(frame , (720 , paddle_Y) , 4 , (0,0,255) , -1)
+        cv2.circle(frame , (350 , ball_Y) , 4 , (0,255,0) , -1)
+        # cv2.circle(frame , (720 , paddle_Y[0]) , 4 , (0,0,255) , -1)
+        # cv2.circle(frame , (720 , paddle_Y[1]) , 4 , (0,0,255) , -1)
 
         control(ball_Y , paddle_Y)
 
-        # cv2.imshow("Original" , frame)
+        cv2.imshow("Original" , frame)
         # cv2.imshow("Edges" , edges)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
