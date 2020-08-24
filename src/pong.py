@@ -4,7 +4,7 @@ import numpy as np
 import cv2
 from PIL import ImageGrab
 
-MAX_FRAMES = 200
+MAX_FRAMES = 550
 PADDLE_Y = [245 , 255]
 
 def windowMovingFunc(winName="Original"):
@@ -16,8 +16,8 @@ def windowMovingFunc(winName="Original"):
 def get_screen(PONG_BOX = (100,220,845,720)):
     screen = ImageGrab.grab(bbox=PONG_BOX)
     frame = np.array(screen)
-    # frame = cv2.cvtColor(frame , cv2.COLOR_RGB2GRAY)
-    frame = cv2.cvtColor(frame , cv2.COLOR_RGB2BGR)
+    frame = cv2.cvtColor(frame , cv2.COLOR_RGB2GRAY)
+    # frame = cv2.cvtColor(frame , cv2.COLOR_RGB2BGR)
     return frame
 
 def movingEdges(frame):
@@ -60,7 +60,7 @@ def control(ball , paddle) :
 
 if __name__ == "__main__":
 
-    windowMovingFunc()
+    # windowMovingFunc()
 
     fgbg = cv2.createBackgroundSubtractorKNN(history=40) # history is low as we have to track only the ball and not other dynamic things like the score, paddles, etc
 
@@ -87,17 +87,17 @@ if __name__ == "__main__":
 
         control(ball_Y , paddle_Y)
 
-        cv2.imshow("Original" , frame)
+        # cv2.imshow("Original" , frame)
         # cv2.imshow("Edges" , edges)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
         
         frame_count += 1
-        if frame_count >= MAX_FRAMES:
-            pyKey.releaseKey("UP")
-            pyKey.releaseKey("DOWN")
-            break
+        # if frame_count >= MAX_FRAMES:
+        #     pyKey.releaseKey("UP")
+        #     pyKey.releaseKey("DOWN")
+        #     break
         print(frame_count , "fps: " , time.time() - start)
 
     cv2.destroyAllWindows()
