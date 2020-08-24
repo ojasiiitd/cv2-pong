@@ -5,6 +5,7 @@ import cv2
 from PIL import ImageGrab
 
 MAX_FRAMES = 550
+Y_EDGETRIM = 20
 PADDLE_Y = [245 , 255]
 
 def windowMovingFunc(winName="Original"):
@@ -27,11 +28,11 @@ def movingEdges(frame):
     return edges
 
 def ballYcoor(edges):
-    indices = np.where(edges[40: , :725] != [0])
+    indices = np.where(edges[Y_EDGETRIM: , :725] != [0])
     coordinates = zip(indices[1] , indices[0]) # getting all edge coordinates
     y = []
     for i,pt in enumerate(coordinates):
-        y.append(pt[1]+40)
+        y.append(pt[1]+Y_EDGETRIM)
         break
     if len(y) == 0:
         return 250
@@ -94,10 +95,10 @@ if __name__ == "__main__":
             break
         
         frame_count += 1
-        if frame_count >= MAX_FRAMES:
-            pyKey.releaseKey("UP")
-            pyKey.releaseKey("DOWN")
-            break
+        # if frame_count >= MAX_FRAMES:
+        #     pyKey.releaseKey("UP")
+        #     pyKey.releaseKey("DOWN")
+        #     break
         # print(frame_count , "fps: " , time.time() - start)
 
     cv2.destroyAllWindows()
